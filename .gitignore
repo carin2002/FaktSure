@@ -1,0 +1,64 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local database
+*.db
+*.sqlite3
+
+# Uploaded and generated documents
+backend/storage/
+backend/uploads/
+backend/generated/
+
+# Temporary files
+tmp/
+temp/
+
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# Secrets and credentials
+*.pem
+*.key
+credentials.json
+service-account.json

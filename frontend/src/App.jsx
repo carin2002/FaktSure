@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { login, getCurrentUser, apiRequest } from './api';
 import {
   LayoutDashboard, FileText, Upload, Users, Package, History,
   Search, Bell, Plus, ArrowUpRight, ArrowDownRight, AlertTriangle,
@@ -61,6 +62,42 @@ function Status({status}) {
 }
 
 function App(){
+  const [user,setUser] = useState(null);
+  const [authLoading,setAuthLoading] = useState(true);
+  const [authError,setAuthError] = useState('');
+  const [email,setEmail] = useState('');
+  const [password,setPassword] = useState('');
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch {
+        sessionStorage.removeItem('faktsure_token');
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+    checkAuth();
+  }, []);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+
+    try {
+      const data = await login(email, password);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      toast('Connexion réussie.');
+    } catch (error) {
+      setAuthError(error.message || 'Identifiants incorrects.');
+    } finally {
+      setAuthLoading(false);
+    }
+  }
   const [page,setPage] = useState('dashboard');
   const [mobileOpen,setMobileOpen] = useState(false);
   const [search,setSearch] = useState('');
@@ -87,22 +124,113 @@ function App(){
     setMobileOpen(false);
     setSelectedInvoice(null);
   }
-  function simulateAnalysis(){
-    const sourceName = files[0]?.name || 'Message commercial';
-    setShowImport(false);
-    setPage('documents');
-    setAnalysisData({
-      source: sourceName,
-      supplier: 'NovaTech Solutions',
-      client: 'Bénin Digital',
-      date: '25/11/2026',
-      description: 'Ordinateurs portables Pro',
-      quantity: 2,
-      unitPrice: 450000,
-      vat: 18
-    });
-    log('Analyse simulée lancée sur une nouvelle source');
-    toast('Source prête pour vérification.');
+  async function simulateAnalysis(){
+    if (!files.length || !(files[0] instanceof File)) {
+      toast("Importe un fichier PDF.");
+      return;
+    }
+
+    const file = files[0];
+
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      toast("Utilise un PDF pour cette démonstration.");
+      return;
+    }
+
+    try {
+      toast("Création du lot...");
+
+      const batch = await apiRequest("/batches", {
+        method: "POST",
+        body: JSON.stringify({name: file.name})
+      });
+
+      const fd = new FormData();
+      fd.append("files", file);
+
+      const uploaded = await apiRequest(
+        `/batches/${batch.public_id}/documents`,
+        {method: "POST", body: fd}
+      );
+
+      const result = uploaded.results?.find(
+        x => x.document_id && ["uploaded", "duplicate"].includes(x.status)
+      );
+
+      if (!result) {
+        throw new Error(uploaded.results?.[0]?.error || "Échec de l'import.");
+      }
+
+      await apiRequest(`/batches/${batch.public_id}/process`, {
+        method: "POST"
+      });
+
+      toast("Document envoyé à l'IA...");
+
+      let current;
+
+      for (let i = 0; i < 45; i++) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        current = await apiRequest(`/batches/${batch.public_id}`);
+
+        if (["COMPLETED", "PARTIALLY_COMPLETED"].includes(current.status)) {
+          break;
+        }
+      }
+
+      if (!current || !["COMPLETED", "PARTIALLY_COMPLETED"].includes(current.status)) {
+        throw new Error("Traitement trop long. Réessaie.");
+      }
+
+      const [fields, anomalies, document] = await Promise.all([
+        apiRequest(`/documents/${result.document_id}/fields`),
+        apiRequest(`/documents/${result.document_id}/anomalies`),
+        apiRequest(`/documents/${result.document_id}`)
+      ]);
+
+      const values = Object.fromEntries(
+        fields.map(f => [f.field_name, f.corrected_value ?? f.value])
+      );
+
+      const num = v =>
+        Number(String(v ?? 0).replace(/[^0-9,.-]/g, "").replace(",", ".")) || 0;
+
+      const quantity = num(values.quantity) || 1;
+      const unitPrice = num(values.unit_price || values.unitPrice);
+      const subtotal = num(values.subtotal) || quantity * unitPrice;
+      const tax = num(values.tax_total || values.vat_amount);
+      const grandTotal = num(values.grand_total || values.total_ttc);
+      const vat = subtotal > 0 && tax > 0 ? tax / subtotal * 100 : 0;
+
+      setShowImport(false);
+      setPage("documents");
+
+      setAnalysisData({
+        source: file.name,
+        supplier: values.supplier_name || values.supplier || "Non détecté",
+        client: values.client_name || "Non détecté",
+        date: values.document_date || "Non détectée",
+        description: values.description || values.item_description || file.name,
+        quantity,
+        unitPrice,
+        vat,
+        subtotal,
+        tax,
+        grandTotal,
+        currency: values.currency || "XOF",
+        fields,
+        anomalies,
+        documentId: result.document_id,
+        documentStatus: document.status
+      });
+
+      log("Extraction réelle effectuée par FaktSure AI");
+      toast("Extraction terminée. Vérifie les données.");
+
+    } catch (error) {
+      console.error(error);
+      toast(error.message || "Erreur lors de l'analyse.");
+    }
   }
 
   function confirmAnalysis(data){
@@ -152,11 +280,15 @@ function App(){
   const filtered=invoices.filter(i=>(i.id+i.client+i.status).toLowerCase().includes(search.toLowerCase()));
   const title=nav.find(n=>n.id===page)?.label||'Vue d’ensemble';
 
+  if (authLoading) return <div style={{padding:40,textAlign:"center"}}>Vérification de la connexion...</div>;
+
+  if (!user) return (<div style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"#f5f6fa",padding:20}}><form onSubmit={handleLogin} style={{background:"#fff",padding:32,borderRadius:16,width:"100%",maxWidth:400}}><h2>Connexion FaktSure</h2><p>Connecte-toi avec tes identifiants administrateur.</p><input type="email" placeholder="Adresse email" value={email} onChange={e=>setEmail(e.target.value)} required style={{width:"100%",padding:13,marginBottom:12,boxSizing:"border-box"}}/><input type="password" placeholder="Mot de passe" value={password} onChange={e=>setPassword(e.target.value)} required style={{width:"100%",padding:13,marginBottom:12,boxSizing:"border-box"}}/>{authError && <p style={{color:"red"}}>{authError}</p>}<button type="submit" style={{width:"100%",padding:14,background:"#143b6f",color:"#fff",border:0,borderRadius:8}}>Se connecter</button></form></div>);
+
   return <div className="app-shell">
     {mobileOpen && <div className="mobile-overlay" onClick={()=>setMobileOpen(false)} />}
     <aside className={`sidebar ${mobileOpen?'open':''}`}>
       <div className="brand">
-        <div className="brand-mark"><ShieldCheck size={22}/></div>
+        <div className="brand-mark"><FileText size={22}/><span className="brand-check"><Check size={12}/></span></div>
         <div><strong>FaktSure</strong><span>SMART INVOICING</span></div>
         <button className="close-sidebar" onClick={()=>setMobileOpen(false)}><X/></button>
       </div>

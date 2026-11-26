@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root{font-family:'DM Sans',sans-serif;color:#182230;background:#f6f7fb;font-synthesis:none;text-rendering:optimizeLegibility}
@@ -310,4 +311,190 @@ tbody tr:last-child td{border-bottom:0}
   .invoice-modal .review-form {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* ===== FaktSure Official Brand ===== */
+:root {
+  --ink: #0E2A47;
+  --green: #067A4B;
+  --paper: #F5F7F4;
+  --light-green: #3DDC97;
+  --draft: #F5B800;
+  --alert: #C62F2F;
+
+  --primary: var(--ink);
+  --success: var(--green);
+  --background: var(--paper);
+}
+
+body {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif !important;
+  color: var(--ink);
+}
+
+button {
+  font-family: 'Inter', sans-serif;
+  min-height: 44px;
+  border-radius: 10px;
+}
+
+input, select, textarea {
+  font-family: 'Inter', sans-serif;
+  border-radius: 10px;
+}
+
+.amount, .price, .invoice-number, .total,
+.currency, .numeric, code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+button.btn-primary, button.primary, .btn-primary {
+  background: var(--green) !important;
+  color: white !important;
+}
+
+button.btn-secondary, button.secondary, .btn-secondary {
+  background: white !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--ink) !important;
+}
+
+/* Status colors */
+.badge-draft, .status-draft, .draft-badge {
+  background: var(--draft) !important;
+  color: var(--ink) !important;
+}
+
+.badge-success, .status-success, .badge-validated,
+.status-validated, .validated-badge {
+  background: var(--green) !important;
+  color: white !important;
+}
+
+.badge-danger, .status-danger, .badge-anomaly,
+.status-anomaly, .anomaly-badge {
+  background: var(--alert) !important;
+  color: white !important;
+}
+
+.sidebar, .navbar, .header-dark {
+  background: var(--ink);
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@500&display=swap');
+
+:root {
+  --ink: #0E2A47;
+  --green: #067A4B;
+  --paper: #F5F7F4;
+  --light-green: #3DDC97;
+  --draft: #F5B800;
+  --alert: #C62F2F;
+}
+
+body {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif !important;
+  color: var(--ink);
+}
+
+
+button {
+  font-family: 'Inter', sans-serif;
+  min-height: 44px;
+  border-radius: 10px;
+}
+
+input, select, textarea {
+  font-family: 'Inter', sans-serif;
+  border-radius: 10px;
+}
+
+.amount, .price, .invoice-number, .total,
+.currency, .numeric, code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+
+.badge-draft, .status-draft, .draft-badge {
+  background: #F5B800 !important;
+  color: #0E2A47 !important;
+}
+
+.badge-success, .status-success, .badge-validated,
+.status-validated, .validated-badge {
+  background: #067A4B !important;
+  color: white !important;
+}
+
+.badge-danger, .status-danger, .badge-anomaly,
+.status-anomaly, .anomaly-badge {
+  background: #C62F2F !important;
+  color: white !important;
+}
+
+.badge-danger, .status-danger, .badge-anomaly,
+.status-anomaly, .anomaly-badge {
+  background: #C62F2F !important;
+  color: white !important;
+}
+
+/* Correction FaktSure */
+.brand strong {
+  color: #F5F7F4 !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 18px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.brand-mark {
+  background: #0E2A47 !important;
+}
+.quick-icon.purple {
+  background: #0E2A47 !important;
+  color: #F5F7F4 !important;
+}
+.invoice-brand {
+  color: #0E2A47 !important;
+}
+.review-banner small {
+  color: #0E2A47 !important;
+}
+
+/* FaktSure - Logo document validé */
+.brand-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0E2A47 !important;
+  color: #F5F7F4 !important;
+}
+
+.brand-check {
+  position: absolute;
+  bottom: -3px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #067A4B;
+  color: white;
+  border: 2px solid #0E2A47;
 }
